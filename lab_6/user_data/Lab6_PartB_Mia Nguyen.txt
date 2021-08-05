@@ -1,0 +1,127 @@
+Lab #6 Take Home
+Your name:
+
+
+---------------------------------------- Question 1 Query ---------------------------------------- 
+
+SELECT ship_city, COUNT(ship_city) as highest_num_orders from orders group by ship_city order by highest_num_orders DESC limit 1;
+
+---------------------------------------- Question 1 Results ---------------------------------------- 					
+   ship_city    | most_orders 
+----------------+-------------
+ Rio de Janeiro |          34
+(1 row)	
+
+---------------------------------------- Question 2 Query ----------------------------------------
+
+create view orders_from_graz as select o.ship_city, od.quantity, o.order_id from orders o, order_details od where o.order_id=od.order_id and ship_city = 'Graz' order by od.quantity asc limit 1;
+
+create view products_in_order as select product_id from order_details od where order_id=(select order_id from orders_from_graz);
+
+select p.product_name from products p, products_in_order pi where p.product_id=pi.product_id;
+
+---------------------------------------- Question 2 Results ---------------------------------------- 					
+       product_name        
+---------------------------
+ Sir Rodney's Scones
+ Rössle Sauerkraut
+ Ravioli Angelo
+ Wimmers gute Semmelknödel
+(4 rows)
+
+---------------------------------------- Question 3 Query ---------------------------------------- 
+
+create table company_orders(
+company_name VARCHAR(100),
+PRIMARY KEY (company_name),
+total_orders INT
+);
+
+insert into company_orders( select company_name, count(order_id) as "total_orders" from orders o right join customers c ON o.customer_id=c.customer_id
+group by company_name order by "total_orders");
+
+select * from company_orders where total_orders > (select avg("total_orders") from 
+(select company_name, count(order_id) as "total_orders" from orders o right join customers c ON o.customer_id=c.customer_id group by company_name order by "total_orders") as average); 
+
+---------------------------------------- Question 3 Results ----------------------------------------
+        
+
+         company_name         | total_orders 
+------------------------------+--------------
+ Richter Supermarkt           |           10
+ Tortuga Restaurante          |           10
+ Die Wandernde Kuh            |           10
+ Ottilies Käseladen           |           10
+ Island Trading               |           10
+ Piccolo und mehr             |           10
+ B's Beverages                |           10
+ Magazzini Alimentari Riuniti |           10
+ Victuailles en stock         |           10
+ Old World Delicatessen       |           10
+ Godos Cocina Típica          |           10
+ Great Lakes Food Market      |           11
+ Vaffeljernet                 |           11
+ Blondesddsl père et fils     |           11
+ Ricardo Adocicados           |           11
+ LINO-Delicateses             |           12
+ Suprêmes délices             |           12
+ Reggiani Caseifici           |           12
+ Mère Paillarde               |           13
+ Queen Cozinha                |           13
+ Around the Horn              |           13
+ Hanari Carnes                |           14
+ La maison d'Asie             |           14
+ Bottom-Dollar Markets        |           14
+ LILA-Supermercado            |           14
+ White Clover Markets         |           14
+ Königlich Essen              |           14
+ Wartian Herkku               |           15
+ Lehmanns Marktstand          |           15
+ Frankenversand               |           15
+ Bon app'                     |           17
+ Rattlesnake Canyon Grocery   |           18
+ Berglunds snabbköp           |           18
+ HILARION-Abastos             |           18
+ Hungry Owl All-Night Grocers |           19
+ Folk och fä HB               |           19
+ QUICK-Stop                   |           28
+ Ernst Handel                 |           30
+ Save-a-lot Markets           |           31
+(39 rows)
+---------------------------------------- Question 4 Query ---------------------------------------- 
+
+create table categories_with_more_than_10 (
+category_name VARCHAR(100),
+count INT);
+
+insert into categories_with_more_than_10 (select category_name, count(product_id) from categories c, products p where c.category_id=p.category_id group by category_name);
+
+select * from categories_with_more_than_10 where count > 10;
+
+
+---------------------------------------- Question 4 Results ---------------------------------------- 					
+ category_name | count 
+---------------+-------
+ Beverages     |    12
+ Seafood       |    12
+ Condiments    |    12
+ Confections   |    13
+(4 rows)
+
+---------------------------------------- Question 5 Query ---------------------------------------- 
+
+
+create view most_products_sold as select product_name, quantity from order_details od, products p where od.product_id=p.product_id order by quantity;
+
+select * from most_products_sold where quantity =(select max(quantity) from most_products_sold);
+
+---------------------------------------- Question 5 Results ---------------------------------------- 					
+          product_name           | quantity 
+---------------------------------+----------
+ Pâté chinois                    |      120
+ Pâté chinois                    |      120
+ Schoggi Schokolade              |      120
+ Sirop d'érable                  |      120
+ Jack's New England Clam Chowder |      120
+(5 rows)
+
